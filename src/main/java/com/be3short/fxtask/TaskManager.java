@@ -16,8 +16,15 @@ public class TaskManager extends Application
 	private static ArrayList<TaskDescriptor> tasks = new ArrayList<TaskDescriptor>();
 	private static String name;
 	private static TaskManager manager; // static access to task manager instance
-	Scanner in;
+	public static Scanner in = new Scanner(System.in);
 	public static boolean done = false;
+	static Stage stage;
+
+	public static void closeStage()
+	{
+		stage.show();
+		stage.close();
+	}
 
 	/*
 	 * Creates a new stage from the main application thread
@@ -40,7 +47,7 @@ public class TaskManager extends Application
 	{
 
 		manager = this;
-		in = new Scanner(System.in);
+		stage = primaryStage;
 		if (tasks.size() <= 1)
 		{
 			try
@@ -55,8 +62,7 @@ public class TaskManager extends Application
 			boolean done = false;
 		}
 		runMenuTasks();
-		//		primaryStage.show();
-		//		primaryStage.close();
+
 	}
 
 	//runMenuTasks();
@@ -178,30 +184,37 @@ public class TaskManager extends Application
 			@Override
 			protected Integer call() throws Exception
 			{
+				Integer index = -1;
 				String input = "";
 				printMenu();
 				try
 				{
+					//	manager.in = new Scanner(System.in);
+					if (manager.in.hasNextLine())
+					{
+						input = manager.in.nextLine();
 
-					input = manager.in.nextLine();
+						if (input.equals("q"))
+						{
+							System.exit(0);
+						}
+						// in.close();
+						System.out.println("input " + input);
+						index = Integer.parseInt(input);
+						if (tasks.size() > index && index >= 0)
+						{
+							try
+							{
 
-					if (input.equals("q"))
+								//	newTask();
+							} catch (Exception e)
+							{
+								e.printStackTrace();
+							}
+						}
+					} else
 					{
 						return -1;
-					}
-					// in.close();
-					System.out.println("input " + input);
-					Integer index = Integer.parseInt(input);
-					if (tasks.size() > index && index >= 0)
-					{
-						try
-						{
-
-							//	newTask();
-						} catch (Exception e)
-						{
-							e.printStackTrace();
-						}
 					}
 				} catch (
 
@@ -210,19 +223,35 @@ public class TaskManager extends Application
 					System.err.println("Bad input " + input + ", please try again\n");
 
 				}
-				return 0;
+				return index;
 			}
 
 			@Override
 			protected void succeeded()
 			{
 				super.succeeded();
-				runTask(tasks.get(super.getValue()));
-				//runMenuTasks();
-				if (!done)
+				if (super.getValue() <= -2)
 				{
+					done = true;
+					closeStage();
+				} else
+				{
+					try
+					{
+						runTask(tasks.get(super.getValue()));
+					} catch (
+
+					Exception badInput)
+					{
+
+					}
 					runMenuTasks();
 				}
+
+				//				if (!done)
+				//				{
+				//					runMenuTasks();
+				//				}
 			}
 
 		};
@@ -240,7 +269,7 @@ public class TaskManager extends Application
 			ind++;
 		}
 		System.out.println("q : quit");
-		System.out.print("Enter task index to execute >> ");
+		System.out.println("Enter task index to execute >> ");
 	}
 
 }
